@@ -617,18 +617,146 @@ hr {
     display: none !important;
 }
 
-/* 针对超小屏幕（max-width: 375px） */
-@media (max-width: 375px) {
+/* ==================== 移动端适配（max-width: 768px） ==================== */
+@media (max-width: 768px) {
+    /* 1. 字体大小调整 */
     h1 {
-        font-size: 2rem;
+        font-size: 2.4rem;
+        margin-top: 40px;
+        padding-bottom: 30px;
+        margin-bottom: 30px;
     }
-    
+
+    h2 {
+        font-size: 1.8rem;
+        margin-top: 25px;
+        margin-bottom: 25px;
+    }
+
+    h3 {
+        font-size: 1.6rem;
+        margin-top: 20px;
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+    }
+
+    h4 {
+        font-size: 1.4rem;
+    }
+
+    h5 {
+        font-size: 1.2rem;
+    }
+
+    p {
+        font-size: 1rem;
+        margin-bottom: 1.5em;
+        line-height: 1.7;
+    }
+
+    /* 2. 容器边距调整（重点修改1：增加左右边距） */
     .book-container {
+        padding: 15px 28px;    /* 从原来的20px增加到28px，左右更宽敞 */
+        padding-bottom: 80px;  /* 重点！增加底部内边距，防止内容被遮挡 */
+        max-width: 100%;
+    }
+
+    /* 3. 目录面板优化 */
+    .toc-panel {
+        width: 250px;
+        left: -250px;
+    }
+
+    .toc-item {
+        min-height: 48px;
+        font-size: 0.95rem !important;
+        padding-left: 15px;
+    }
+
+    .toc-header {
         padding: 12px 15px;
     }
-    
-    .toc-panel {
-        width: 100%; /* 在小屏幕上全屏显示目录 */
-        left: -100%;
+
+    /* 4. 控制栏按钮调整 */
+    .controls {
+        height: 50px;
+    }
+
+    .controls button {
+        font-size: 1.8rem;
+    }
+
+    .controls button.menu-btn {
+        width: 70px;
+        height: 50px;
+        font-size: 1.3rem;
+    }
+
+    /* 5. 页面内容区域（重点修改2：确保底部有空间） */
+    .page-content {
+        flex: 1;
+        overflow-y: auto;
+        box-sizing: border-box;
+        padding-bottom: 30px; /* 再加一层保险，内容区域也增加底部空间 */
+    }
+
+    /* 6. 引用块样式优化 */
+    blockquote {
+        margin: 15px 0;
+        padding: 12px 15px;
+        border-left-width: 3px;
+    }
+
+    blockquote p {
+        font-size: 1rem;
+    }
+
+    /* 7. 列表样式调整 */
+    ul.md-list, ol.md-list {
+        padding-left: 20px;
+        margin: 15px 0;
+    }
+
+    .md-list li {
+        margin-bottom: 8px;
+        font-size: 1rem;
+    }
+
+    /* 8. 图片容器优化 */
+    .image-container {
+        margin: 15px 0;
+        min-height: 80px;
+    }
+
+    .image-caption {
+        font-size: 0.8rem;
+        margin-top: 6px;
+    }
+
+    /* 9. 代码块样式调整 */
+    pre.code-block {
+        padding: 12px;
+        margin: 15px 0;
+        font-size: 0.9em;
+        border-radius: 4px;
+    }
+
+    code.inline-code {
+        padding: 1px 4px;
+        font-size: 0.85em;
+    }
+
+    /* 10. 特殊段落样式 */
+    p.meta {
+        font-size: 0.65rem;
+        margin-top: 40px;
+        margin-bottom: 40px;
+    }
+
+    /* 11. 加载动画微调 */
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border-width: 3px;
     }
 }
