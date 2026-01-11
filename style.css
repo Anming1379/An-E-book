@@ -363,16 +363,15 @@ blockquote p:last-child {
 .toc-panel {
     position: fixed;
     top: 0;
-    left: -400px; /* 默认隐藏在左侧 */
+    left: -310px; /* 默认隐藏在左侧 */
     width: 280px;
     height: 100%;
     background-color: var(--background);
-    box-shadow: 2px 0 10px rgba(var(--shadow-rgb), 0.1);
     transition: left 0.3s ease;
     z-index: 2000;
     display: flex;
     flex-direction: column;
-    border-right: 1px solid var(--primary);
+    border-right: -10px solid var(--primary);
 }
 
 .toc-panel.show {
@@ -664,7 +663,7 @@ hr {
     /* 3. 目录面板优化 */
     .toc-panel {
         width: 250px;
-        left: -250px;
+        left: -270px;
     }
 
     .toc-item {
