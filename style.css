@@ -617,3 +617,18 @@ hr {
     display: none !important;
 }
 
+/* 针对超小屏幕（max-width: 375px） */
+@media (max-width: 375px) {
+    h1 {
+        font-size: 2rem;
+    }
+    
+    .book-container {
+        padding: 12px 15px;
+    }
+    
+    .toc-panel {
+        width: 100%; /* 在小屏幕上全屏显示目录 */
+        left: -100%;
+    }
+}
