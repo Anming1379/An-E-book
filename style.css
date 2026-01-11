@@ -363,7 +363,7 @@ blockquote p:last-child {
 .toc-panel {
     position: fixed;
     top: 0;
-    left: -300px; /* 默认隐藏在左侧 */
+    left: -400px; /* 默认隐藏在左侧 */
     width: 280px;
     height: 100%;
     background-color: var(--background);
