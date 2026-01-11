@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电子书构建工具</title>
+    <style>
+        /* 基础样式 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { 
+            text-align: center; 
+            margin-bottom: 20px; 
+            color: #2c3e50;
+        }
+        
+        /* 表单区域 */
+        .form-group { margin-bottom: 20px; }
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 500;
+        }
+        input { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+        }
+        
+        /* 文件上传 */
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 6px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            margin: 15px 0;
+            transition: border-color 0.2s;
+        }
+        .upload-area:hover { border-color: #4a6cf7; }
+        .upload-icon { font-size: 40px; margin-bottom: 10px; }
+        .upload-area p { color: #666; margin: 5px 0; }
+        
+        /* 按钮 */
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #4a6cf7;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover { background: #3a5ce5; }
+        .secondary-btn { background: #6c757d; }
+        .secondary-btn:hover { background: #5a6268; }
+        
+        /* 结果区域 */
+        .result-section { 
+            display: none; 
+            margin-top: 25px; 
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        .result-section.show { display: block; }
+        .code-output {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .button-group button { flex: 1; }
+        
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .container { padding: 20px; }
+            .button-group { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>电子书构建工具</h1>
+        
+        <div class="form-group">
+            <label for="bookTitle">书名</label>
+            <input type="text" id="bookTitle" value="我的电子书">
+        </div>
+        
+        <div class="form-group">
+            <label for="bookAuthor">作者</label>
+            <input type="text" id="bookAuthor" value="匿名">
+        </div>
+        
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📄</div>
+            <p><strong>点击选择文件</strong> 或拖放文件到此处</p>
+            <p>支持 .txt, .md 格式</p>
+        </div>
+        
+        <input type="file" id="fileInput" accept=".txt,.md" style="display:none">
+        
+        <button id="generateBtn">生成电子书文件</button>
+        
+        <div class="result-section" id="resultSection">
+            <h3>生成结果</h3>
+            <p>下载下面的 manifest.js 文件，将其与电子书阅读器文件放在同一目录。</p>
+            
+            <div class="code-output" id="codeOutput">
+                // 生成的代码将显示在这里
+            </div>
+            
+            <div class="button-group">
+                <button id="downloadBtn">下载 manifest.js</button>
+                <button id="closeBtn" class="secondary-btn">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const resultSection = document.getElementById('resultSection');
+        const codeOutput = document.getElementById('codeOutput');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const closeBtn = document.getElementById('closeBtn');
+        
+        // 文件内容变量
+        let fileContent = '';
+        
+        // 初始化
+        function init() {
+            // 文件上传区域点击事件
+            uploadArea.addEventListener('click', () => fileInput.click());
+            
+            // 文件选择事件
+            fileInput.addEventListener('change', handleFileSelect);
+            
+            // 拖放事件
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = '#4a6cf7';
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.borderColor = '#ccc';
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = '#ccc';
+                
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    handleFileSelect();
+                }
+            });
+            
+            // 按钮事件
+            generateBtn.addEventListener('click', generateManifest);
+            downloadBtn.addEventListener('click', downloadManifest);
+            closeBtn.addEventListener('click', () => {
+                resultSection.classList.remove('show');
+                // 【修复滚动bug】：不自动滚动到顶部
+                // 移除任何可能引起滚动的代码
+            });
+        }
+        
+        // 处理文件选择
+        function handleFileSelect() {
+            if (!fileInput.files.length) return;
+            
+            const file = fileInput.files[0];
+            
+            // 验证文件类型
+            if (!file.name.match(/\.(txt|md)$/i)) {
+                alert('请选择 .txt 或 .md 文件');
+                return;
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                fileContent = e.target.result;
+                generateBtn.textContent = `已选择: ${file.name} - 点击生成`;
+            };
+            
+            reader.onerror = function() {
+                alert('读取文件时出错');
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        // 生成 manifest.js 内容
+        function generateManifest() {
+            if (!fileContent) {
+                alert('请先选择文件');
+                return;
+            }
+            
+            // 获取表单数据
+            const title = document.getElementById('bookTitle').value.trim();
+            const author = document.getElementById('bookAuthor').value.trim();
+            
+            if (!title) {
+                alert('请输入书名');
+                return;
+            }
+            
+            // 构建 manifest.js 内容
+            const manifestContent = `// manifest.js
+window.bookManifest = {
+    title: "${escapeString(title)}",
+    author: "${escapeString(author)}",
+    date: "${new Date().getFullYear()}",
+    content: \`${escapeString(fileContent, true)}\`
+};`;
+            
+            // 显示结果
+            codeOutput.textContent = manifestContent;
+            resultSection.classList.add('show');
+            
+            // 【修复滚动bug】：不自动滚动，让用户自行查看
+            // 移除 resultSection.scrollIntoView()
+        }
+        
+        // 下载 manifest.js 文件
+        function downloadManifest() {
+            const content = codeOutput.textContent;
+            
+            // 创建 Blob 和下载链接
+            const blob = new Blob([content], { type: 'application/javascript' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'manifest.js';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            URL.revokeObjectURL(url);
+            
+            // 简单提示
+            const originalText = downloadBtn.textContent;
+            downloadBtn.textContent = '✓ 下载成功';
+            setTimeout(() => {
+                downloadBtn.textContent = originalText;
+            }, 2000);
+        }
+        
+        // 字符串转义
+        function escapeString(str, isTemplateLiteral = false) {
+            if (!str) return '';
+            
+            if (isTemplateLiteral) {
+                // 对模板字符串进行转义
+                return str
+                    .replace(/\\/g, '\\\\')    // 转义反斜杠
+                    .replace(/`/g, '\\`')      // 转义反引号
+                    .replace(/\$/g, '\\$');    // 转义美元符号
+            }
+            
+            // 对普通字符串进行转义
+            return str
+                .replace(/\\/g, '\\\\')
+                .replace(/"/g, '\\"')
+                .replace(/\n/g, '\\n')
+                .replace(/\r/g, '\\r');
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

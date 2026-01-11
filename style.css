@@ -1,0 +1,619 @@
+:root {
+    /* 字体变量 */
+    --font-serif: "Noto Serif SC", serif;
+    --font-sans: "Noto Sans SC", sans-serif;
+    --current-font: var(--font-serif);
+
+    /* 颜色变量 - 合并相近颜色，使用十六进制基色 */
+    --primary: #24242a;          /* 主色 - 深色文本、边框 */
+    --primary-rgb: 36, 36, 42;   /* 主色RGB，用于透明变体 */
+    --background: #fffaeb;       /* 背景色 - 浅米色，合并 #fffaeb 和 #fffded */
+    --background-rgb: 255, 250, 235; /* 背景RGB，用于透明变体 */
+    --shadow-rgb: 0, 0, 0;       /* 阴影RGB，用于透明变体 */
+    --error: #c33;               /* 错误色 */
+}
+
+/* 现代主题覆盖 */
+.modern-theme {
+    --current-font: var(--font-sans);
+    --primary: #172850;          /* 主色 - 深色文本、边框 */
+    --primary-rgb: 15, 35, 100;   /* 主色RGB，用于透明变体 */
+    --background: #ffffff;       /* 背景色 */
+    --background-rgb: 255, 250, 235; /* 背景RGB，用于透明变体 */
+}
+
+/* 现代主题覆盖 */
+.an-theme {
+    --current-font: var(--font-serif);
+    --primary: #3c3e53;          /* 主色 - 深色文本、边框 */
+    --primary-rgb: 15, 35, 100;   /* 主色RGB，用于透明变体 */
+    --background: #ffffff;       /* 背景色 - 浅米色，合并 #fffaeb 和 #fffded */
+    --background-rgb: 255, 250, 235; /* 背景RGB，用于透明变体 */
+}
+
+/* 1. 先进行全局复位，消除所有潜在的边距干扰 */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* 强制禁止最外层的滚动 */
+    background-color: var(--background);
+}
+
+body {
+    color: var(--primary);
+    font-family: var(--current-font);
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* 让内容在中间 */
+}
+
+h1 {
+    margin-top: 100px;
+    font-size: 3.5rem;
+    padding-bottom: 50px;
+    margin-bottom: 50px;
+    text-align: left;
+    font-weight: 700;
+}
+
+h2 {
+    margin-top: 40px;
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+    text-align: left;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(var(--primary-rgb), 0.1);
+}
+
+/* 修改：去掉全局段落缩进 */
+p {
+    margin-bottom: 2em;
+    font-size: 1.2rem;
+    text-align: justify;
+    text-justify: inter-character; /* 这行能让中文和英文的间距分布更均匀喔 */
+    word-break: break-word;   
+    font-weight: 400;/* 防止长单词撑破布局 */
+}
+
+/* 新增：缩进段落样式 */
+p.indented {
+    text-indent: 2em; /* 首行缩进2em */
+}
+
+/* 专门针对 class 为 meta 的 p 标签 */
+p.meta {
+    display: flex;             /* 开启弹性布局模式 */
+    justify-content: space-between; /* 重点！这会让内容自动贴向两端 */
+    font-family: var(--font-sans);
+    font-size: 0.7rem;      /* 比正文小一点，显得精致 */
+    color: rgba(var(--primary-rgb), 0.5);          /* 淡淡的灰色 */
+    margin-top: 60px;       /* 往上提，贴近大标题 */
+    margin-bottom: 60px;     /* 离下面的正文远一点，留出空白 */
+    text-align: left;        /* 确保它是左对齐的 */
+}
+
+/* 2. 书本容器：这是解决贴边的关键 */
+.book-container {
+    width: 100%;
+    box-sizing: border-box; /* 保证 padding 不会撑大容器宽度 */
+    padding: 27px 35px;    /* 左右留出 25px 的呼吸空间，这样小屏幕就不贴边啦 */
+    height: calc(100vh - 60px); /* 减去底部控制栏高度 */
+    margin: 0 auto;
+    max-width: 700px;      /* 在大屏幕上依然保持一个舒适的阅读宽度 */
+    overflow: hidden;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+/* 初始时隐藏内容，避免闪烁 */
+.book-container.loading {
+    opacity: 0;
+}
+
+/* 3. 内容层 */
+.content {
+    height: 100%;
+    overflow: hidden !important;
+    display: block;
+    position: relative;
+}
+
+/* 隐藏所有滚动条 */
+::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+    display: none !important;
+}
+
+/* 5. 底部控制栏保持原样，但确保它贴死底部 */
+.controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    display: flex;
+    background-color: var(--background);
+    border-top: 1px solid var(--primary);
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.controls.ready {
+    opacity: 1;
+}
+
+.controls button {
+    flex: 1; /* 让三个按钮平分宽度 */
+    background: none;
+    border: none; /* 去掉原本的边框 */
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    color: var(--primary);
+    font-family: var(--current-font);
+    font-weight: 700;
+    font-size: 2rem;
+    transition: all 0.3s;
+    border-radius: 0; /* 这里的圆角一定要去掉，才能变成直角矩形 */
+}
+
+.controls button:hover {
+    background-color: var(--primary);
+    color: var(--background); /* 悬停时颜色反转，很有交互感喔 */
+}
+
+/* 在按钮之间加竖线 */
+.controls button:first-child {
+    border-right: 1px solid var(--primary);
+}
+
+.controls button:nth-child(2) {
+    border-right: 1px solid var(--primary);
+}
+
+/* 菜单按钮 */
+.controls button.menu-btn {
+    font-size: 1.5rem;
+    font-weight: 400;
+    background-color: var(--background);
+    /* 改为正方形 */
+    border-radius: 0;      /* 去掉圆角 */
+    flex: none !important; /* 取消自动伸缩 */
+    width: 90px;           /* 固定宽度，与高度相同 */
+    height: 60px;          /* 固定高度 */
+    display: flex;         /* 使用flex布局 */
+    align-items: center;   /* 垂直居中 */
+    justify-content: center; /* 水平居中 */
+}
+
+/* 可选：调整悬停效果 */
+.controls button.menu-btn:hover {
+    background-color: var(--primary);
+    color: var(--background);
+}
+
+/* 页面样式 - 每个页面都是一个独立的容器 */
+.page {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    box-sizing: border-box;
+    display: none;
+}
+
+/* 活跃的页面 */
+.page.active {
+    display: flex;
+    flex-direction: column;
+    opacity: 1;
+}
+
+/* 允许页面内容过长时内部滚动 */
+.page-content {
+    flex: 1;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+/* 确保所有页面内容正确布局 */
+.page-content > * {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* ==================== 加载动画样式 ==================== */
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--background);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.loading-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.loading-spinner {
+    text-align: center;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(var(--primary-rgb), 0.1);
+    border-radius: 50%;
+    border-top-color: var(--primary);
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-spinner p {
+    color: var(--primary);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+}
+
+/* 页面内加载提示 */
+.loading-text {
+    text-align: center;
+    margin-top: 100px;
+    color: rgba(var(--primary-rgb), 0.7);
+}
+
+/* ==================== 其他样式 ==================== */
+
+/* 图片样式 */
+
+.image-container {
+    text-align: center;
+    margin: 20px 0;
+    min-height: 100px; /* 给一个保底高度，防止分页计算失效 */
+    display: block;    /* 确保它是块级元素 */
+}
+
+.image-container img {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto;      /* 保持比例 */
+}
+
+.image-caption {
+    font-size: 0.9rem;
+    color: rgba(var(--primary-rgb), 0.7);
+    font-style: italic;
+    text-align: center;
+    margin-top: 8px;
+    font-family: var(--font-sans);
+}
+
+/* 引用样式 */
+blockquote {
+    border-left: 3px solid var(--primary);
+    margin: 20px 0;
+    padding-left: 20px;
+    font-style: italic;
+    color: rgba(var(--primary-rgb), 0.9);
+    background-color: rgba(var(--primary-rgb), 0.05);
+    padding: 15px 20px;
+    border-radius: 0 5px 5px 0;
+}
+
+blockquote p {
+    text-indent: 0 !important;
+    margin-bottom: 0.5em;
+    font-size: 1.1rem;
+}
+
+blockquote p:last-child {
+    margin-bottom: 0;
+}
+
+/* 强制分页标记 */
+.force-page-break {
+    page-break-after: always;
+    break-after: page;
+}
+
+/* 错误提示 */
+.error {
+    text-align: center;
+    padding: 50px;
+    color: var(--error);
+}
+
+.error h1 {
+    color: var(--error);
+    margin-bottom: 20px;
+}
+
+.error code {
+    background: rgba(var(--primary-rgb), 0.1);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: monospace;
+}
+
+/* ==================== 目录面板样式（去掉序号） ==================== */
+
+.toc-panel {
+    position: fixed;
+    top: 0;
+    left: -300px; /* 默认隐藏在左侧 */
+    width: 280px;
+    height: 100%;
+    background-color: var(--background);
+    box-shadow: 2px 0 10px rgba(var(--shadow-rgb), 0.1);
+    transition: left 0.3s ease;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--primary);
+}
+
+.toc-panel.show {
+    left: 0; /* 显示时滑入 */
+}
+
+/* 目录头部 */
+.toc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--primary);
+    background-color: var(--primary);
+    color: var(--background);
+}
+
+.toc-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    flex: 1;
+    text-align: center;
+}
+
+.toc-close {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: var(--background);
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.3s;
+}
+
+.toc-close:hover {
+    color: var(--background);
+}
+
+/* 目录内容 */
+.toc-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background-color: var(--background);
+    -webkit-overflow-scrolling: touch; /* 移动端平滑滚动 */
+}
+
+/* 目录项基础样式 */
+.toc-item {
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    font-weight: 400;
+    border-left: 3px solid transparent; /* 使用border-left代替padding-left */
+    font-size: 1rem !important;
+    font-weight: inherit !important;
+    min-height: 44px; /* 移动端最小触摸区域 */
+    display: flex;
+    align-items: center;
+}
+
+/* 鼠标停留时 */
+.toc-item:hover {
+    background-color: rgba(var(--primary-rgb), 0.1);
+    /* 加上 !important 确保它能压过基础样式 */
+    font-weight: 700 !important;
+}
+
+/* 选中时 */
+.toc-item.active {
+    background-color: rgba(var(--primary-rgb), 0.2);
+    /* 加上 !important 确保它能压过基础样式 */
+    font-weight: 700 !important;
+}
+
+/* 移除遗留的级别类 */
+.toc-level-1,
+.toc-level-2 {
+    display: none; /* 隐藏未使用的类 */
+}
+
+/* 标题索引 - 删除：不再需要序号样式 */
+.toc-index {
+    display: none; /* 隐藏序号 */
+}
+
+/* 遮罩层 */
+.toc-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(var(--shadow-rgb), 0.5);
+    z-index: 1500;
+    display: none;
+}
+
+.toc-overlay.show {
+    display: block;
+}
+
+/* ==================== 添加缺失的Markdown样式 ==================== */
+
+/* 1. 链接样式（解决链接显示为纯文本的问题） */
+a.md-link {
+    color: var(--primary);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(var(--primary-rgb), 0.3);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+a.md-link:hover {
+    border-bottom: 2px solid var(--primary);
+    background-color: rgba(var(--primary-rgb), 0.05);
+}
+
+/* 2. 行内代码样式（解决没有样式的问题） */
+code.inline-code {
+    background-color: rgba(var(--primary-rgb), 0.1);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9em;
+    color: var(--primary);
+    border: 1px solid rgba(var(--primary-rgb), 0.2);
+}
+
+/* 3. 代码块样式（区别于引用块） */
+pre.code-block {
+    background-color: rgba(var(--primary-rgb), 0.05);
+    border: 1px solid rgba(var(--primary-rgb), 0.1);
+    padding: 15px;
+    margin: 20px 0;
+    overflow-x: auto;
+    border-radius: 5px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.95em;
+    line-height: 1.5;
+}
+
+pre.code-block code {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+    color: var(--primary);
+}
+
+/* 4. 三级标题样式 */
+h3 {
+    margin-top: 25px;
+    font-size: 2rem;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    text-align: left;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(var(--primary-rgb), 0.1);
+}
+
+/* 5. 四级标题样式 */
+h4 {
+    margin-top: 20px;
+    font-size: 1.7rem;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+    text-align: left;
+    font-weight: 700;
+}
+
+/* 6. 五级标题样式 */
+h5 {
+    margin-top: 15px;
+    font-size: 1.4rem;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    text-align: left;
+    font-weight: 700;
+}
+
+/* 7. 六级标题样式 */
+h6 {
+    margin-top: 10px;
+    font-size: 1.2rem;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    text-align: left;
+    font-weight: 700;
+    color: rgba(var(--primary-rgb), 0.8);
+}
+
+/* 8. 粗体样式 */
+strong {
+    font-weight: 700;
+    color: var(--primary);
+}
+
+/* 9. 斜体样式 */
+em {
+    font-style: italic;
+    color: rgba(var(--primary-rgb), 0.9);
+}
+
+/* 10. 删除线样式 */
+del {
+    text-decoration: line-through;
+    color: rgba(var(--primary-rgb), 0.6);
+}
+
+/* 11. 列表样式 */
+ul.md-list, ol.md-list {
+    margin: 20px 0;
+    padding-left: 30px;
+}
+
+ul.md-list {
+    list-style-type: disc;
+}
+
+ol.md-list {
+    list-style-type: decimal;
+}
+
+.md-list li {
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.md-list li:last-child {
+    margin-bottom: 0;
+}
+
+/* 12. 移除水平线（将水平线改为分页符） */
+hr {
+    display: none !important;
+}
+

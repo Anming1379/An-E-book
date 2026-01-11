@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>An's E-book</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.geekzu.org/css2?family=Noto+Sans+SC:wght@400;700&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="an-theme">
+    <!-- 加载遮罩层 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>加载电子书中...</p>
+        </div>
+    </div>
+
+    <div class="book-container">
+        <div class="content" id="bookContent">
+            <!-- 内容将由 JavaScript 动态加载 -->
+            <p class="loading-text">正在加载电子书内容...</p>
+        </div>
+    </div>
+
+    <!-- 目录面板 -->
+    <div class="toc-panel" id="tocPanel">
+        <div class="toc-header">
+            <h2>目录</h2>
+            <button class="toc-close" id="tocCloseBtn">×</button>
+        </div>
+        <div class="toc-content" id="tocContent">
+            <!-- 目录内容将由 JavaScript 动态生成 -->
+            <p>正在生成目录...</p>
+        </div>
+    </div>
+
+    <!-- 底部控制栏 -->
+    <div class="controls">
+        <button onclick="prevPage()">←</button>
+        <button class="menu-btn" id="menuBtn">☰</button>
+        <button onclick="nextPage()">→</button>
+    </div>
+    
+    <!-- 引入 manifest.js（放在 script.js 之前） -->
+    <script src="manifest.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
